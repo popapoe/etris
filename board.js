@@ -35,7 +35,7 @@ class Board {
 		let bottom = 32 - Math.clz32(this.g_piss[x] & ~(-1 << y));
 		let top = ctz32(~this.columns[x] & -1 << bottom);
 		if(y >= top) {
-			return;
+			return false;
 		}
 		let mask = ~(-1 << top) & (-1 << bottom);
 		this.columns[x] &= ~mask;
@@ -45,6 +45,7 @@ class Board {
 			this.row_fill[y]--;
 			this.fill--;
 		}
+		return true;
 	}
 	unset_cell(x, y) {
 		this.cells[y][x] = "empty";

@@ -173,15 +173,26 @@ class Game {
 					}
 				}
 			}
-			if(filled_corners >= 3) {
-				this.log.add(`You ${this.piss} SPINNED ${clears.length} linees`);
+			let column_clear_count = 0;
+			if(this.piss === "e piss") {
+				for(let [ offset_x, offset_y ] of get_offsets(this.piss, this.piss_orientation)) {
+					let x = this.piss_x + offset_x;
+					let y = this.piss_y + offset_y;
+					if(this.board.clear_column(x, y)) {
+						column_clear_count++;
+					}
+				}
 			}
-		}
-		if(this.piss === "e piss") {
-			for(let [ offset_x, offset_y ] of get_offsets(this.piss, this.piss_orientation)) {
-				let x = this.piss_x + offset_x;
-				let y = this.piss_y + offset_y;
-				this.board.clear_column(x, y);
+			if(filled_corners >= 3) {
+				this.log.add(`You ${this.piss} SPINNED ${clears.length + column_clear_count} linees`);
+			}
+		} else {
+			if(this.piss === "e piss") {
+				for(let [ offset_x, offset_y ] of get_offsets(this.piss, this.piss_orientation)) {
+					let x = this.piss_x + offset_x;
+					let y = this.piss_y + offset_y;
+					this.board.clear_column(x, y);
+				}
 			}
 		}
 		for(let y of clears) {
