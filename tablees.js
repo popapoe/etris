@@ -159,8 +159,8 @@ let color_table = {
 	"inverse skew": "red",
 	"gamma": "blue",
 	"right gun": "orange",
-	"e piss": "sienna",
-	"g piss": "gold",
+	"e piss": "red",
+	"g piss": "white",
 };
 
 function rotate_cw(orientation) {
