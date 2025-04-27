@@ -1,10 +1,46 @@
 let CELL_SIZE = 20;
 
+class Bindings {
+	constructor() {
+		this.key_to_action = {
+			"ArrowLeft": "left",
+			"ArrowRight": "right",
+			"ArrowDown": "down",
+			"Space": "hard drop",
+			"KeyZ": "rotate ccw",
+			"KeyX": "rotate cw",
+			"ShiftLeft": "rotate 180",
+			"ControlLeft": "hold",
+		};
+		this.action_to_key = {};
+		for(let key in this.key_to_action) {
+			let action = this.key_to_action[key];
+			this.action_to_key[action] = key;
+		}
+	}
+	bind(action, key) {
+		let old_key = this.action_to_key[action];
+		let old_action;
+		if(key in this.key_to_action) {
+			old_action = this.key_to_action[key];
+			this.key_to_action[old_key] = old_action;
+			this.action_to_key[old_action] = old_key;
+		} else {
+			old_action = null;
+			delete this.key_to_action[old_key];
+		}
+		this.key_to_action[key] = action;
+		this.action_to_key[action] = key;
+		return old_action;
+	}
+}
+
 function main() {
 	let hold_canvas = document.getElementById("hold");
 	let board_canvas = document.getElementById("board");
 	let queue_canvas = document.getElementById("queue");
 	let messagees_ul = document.getElementById("messagees");
+	let bindings_table = document.getElementById("bindings");
 	hold_canvas.width = 4 * CELL_SIZE;
 	hold_canvas.height = 2 * CELL_SIZE;
 	board_canvas.width = 10 * CELL_SIZE;
@@ -23,22 +59,43 @@ function main() {
 	hold_context.fillRect(0, 0, 4, 2);
 	draw_queue(queue_context, game.queue);
 	draw_game(board_context, game);
+	let bindings = new Bindings();
+	let key_inputs = {};
+	for(let action in bindings.action_to_key) {
+		let tr = bindings_table.insertRow();
+		let action_td = tr.insertCell();
+		let key_td = tr.insertCell();
+		action_td.textContent = action;
+		let key_input = document.createElement("input");
+		key_td.appendChild(key_input);
+		key_input.value = bindings.action_to_key[action];
+		key_input.onkeydown = function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+			key_input.value = event.code;
+			let old_action = bindings.bind(action, event.code);
+			if(old_action !== null) {
+				key_inputs[old_action].value = bindings.action_to_key[old_action];
+			}
+		};
+		key_inputs[action] = key_input;
+	}
 	window.onkeydown = function(event) {
 		event.preventDefault();
-		switch(event.code) {
-		case "ArrowLeft":
+		switch(bindings.key_to_action[event.code]) {
+		case "left":
 			game.left();
 			draw_game(board_context, game);
 			break;
-		case "ArrowRight":
+		case "right":
 			game.right();
 			draw_game(board_context, game);
 			break;
-		case "ArrowDown":
+		case "down":
 			game.down();
 			draw_game(board_context, game);
 			break;
-		case "Space":
+		case "hard drop":
 			game.drop();
 			game.lock();
 			game.next();
@@ -50,19 +107,19 @@ function main() {
 				messagees_ul.appendChild(li);
 			}
 			break;
-		case "KeyZ":
+		case "rotate ccw":
 			game.rotate_ccw();
 			draw_game(board_context, game);
 			break;
-		case "KeyX":
+		case "rotate cw":
 			game.rotate_cw();
 			draw_game(board_context, game);
 			break;
-		case "ShiftLeft":
+		case "rotate 180":
 			game.rotate_180();
 			draw_game(board_context, game);
 			break;
-		case "ControlLeft":
+		case "hold":
 			game.hold();
 			hold_context.fillStyle = "black";
 			hold_context.fillRect(0, 0, 4, 2);
