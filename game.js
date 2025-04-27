@@ -9,6 +9,7 @@ class Game {
 		this.piss_y = 0;
 		this.piss_orientation = "0";
 		this.is_spin = false;
+		this.over = false;
 		this.next();
 	}
 	is_piss_inside() {
@@ -21,12 +22,19 @@ class Game {
 		}
 		return false;
 	}
-	next() {
-		this.piss = this.queue.take();
+	spawn(piss) {
+		this.piss = piss;
 		this.piss_x = 4;
 		this.piss_y = 19;
 		this.piss_orientation = "0";
 		this.is_spin = false;
+		if(this.is_piss_inside()) {
+			this.log.add("Over");
+			this.over = true;
+		}
+	}
+	next() {
+		this.spawn(this.queue.take());
 	}
 	hold() {
 		if(this.held === "empty") {
@@ -35,11 +43,7 @@ class Game {
 		} else {
 			let temporary = this.held;
 			this.held = this.piss;
-			this.piss = temporary;
-			this.piss_x = 4;
-			this.piss_y = 19;
-			this.piss_orientation = "0";
-			this.is_spin = false;
+			this.spawn(temporary);
 		}
 	}
 	left() {

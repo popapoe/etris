@@ -386,7 +386,9 @@ function main() {
 			li.textContent = message;
 			messagees_ul.appendChild(li);
 		}
-		requestAnimationFrame(frame);
+		if(!state.game.over) {
+			requestAnimationFrame(frame);
+		}
 	}
 }
 
