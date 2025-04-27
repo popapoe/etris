@@ -253,6 +253,10 @@ function main() {
 	let queue_canvas = document.getElementById("queue");
 	let messagees_ul = document.getElementById("messagees");
 	let bindings_table = document.getElementById("bindings");
+	let das_input = document.getElementById("das");
+	let arr_input = document.getElementById("arr");
+	let soft_drop_das_input = document.getElementById("soft-drop-das");
+	let soft_drop_arr_input = document.getElementById("soft-drop-arr");
 	hold_canvas.width = 4 * CELL_SIZE;
 	hold_canvas.height = 2 * CELL_SIZE;
 	board_canvas.width = 10 * CELL_SIZE;
@@ -301,6 +305,58 @@ function main() {
 		};
 		key_inputs[action] = key_input;
 	}
+	das_input.valueAsNumber = state.das;
+	arr_input.valueAsNumber = state.arr;
+	soft_drop_das_input.valueAsNumber = state.soft_drop_das;
+	soft_drop_arr_input.valueAsNumber = state.soft_drop_arr;
+	das_input.onkeydown = function(event) {
+		event.stopPropagation();
+	};
+	das_input.onkeyup = function(event) {
+		event.stopPropagation();
+	};
+	das_input.onchange = function(event) {
+		let value = das_input.valueAsNumber;
+		if(!Number.isNaN(value)) {
+			state.das = value;
+		}
+	};
+	arr_input.onkeydown = function(event) {
+		event.stopPropagation();
+	};
+	arr_input.onkeyup = function(event) {
+		event.stopPropagation();
+	};
+	arr_input.onchange = function(event) {
+		let value = arr_input.valueAsNumber;
+		if(!Number.isNaN(value)) {
+			state.arr = value;
+		}
+	};
+	soft_drop_das_input.onkeydown = function(event) {
+		event.stopPropagation();
+	};
+	soft_drop_das_input.onkeyup = function(event) {
+		event.stopPropagation();
+	};
+	soft_drop_das_input.onchange = function(event) {
+		let value = soft_drop_das_input.valueAsNumber;
+		if(!Number.isNaN(value)) {
+			state.soft_drop_das = value;
+		}
+	};
+	soft_drop_arr_input.onkeydown = function(event) {
+		event.stopPropagation();
+	};
+	soft_drop_arr_input.onkeyup = function(event) {
+		event.stopPropagation();
+	};
+	soft_drop_arr_input.onchange = function(event) {
+		let value = soft_drop_arr_input.valueAsNumber;
+		if(!Number.isNaN(value)) {
+			state.soft_drop_arr = value;
+		}
+	};
 	window.onkeydown = function(event) {
 		event.preventDefault();
 		if(!event.repeat) {
