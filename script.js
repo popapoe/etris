@@ -373,6 +373,7 @@ function main() {
 	};
 	requestAnimationFrame(frame);
 	function frame(target) {
+		state.tick(target);
 		hold_context.fillStyle = "black";
 		hold_context.fillRect(0, 0, 4, 2);
 		if(game.held !== "empty") {
@@ -385,7 +386,6 @@ function main() {
 			li.textContent = message;
 			messagees_ul.appendChild(li);
 		}
-		state.tick(target);
 		requestAnimationFrame(frame);
 	}
 }
