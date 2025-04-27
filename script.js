@@ -65,7 +65,12 @@ function main() {
 		let tr = bindings_table.insertRow();
 		let action_td = tr.insertCell();
 		let key_td = tr.insertCell();
-		action_td.textContent = action;
+		let button = document.createElement("button");
+		action_td.appendChild(button);
+		button.textContent = action;
+		button.onclick = function(event) {
+			perform(action);
+		};
 		let key_input = document.createElement("input");
 		key_td.appendChild(key_input);
 		key_input.value = bindings.action_to_key[action];
@@ -82,7 +87,10 @@ function main() {
 	}
 	window.onkeydown = function(event) {
 		event.preventDefault();
-		switch(bindings.key_to_action[event.code]) {
+		perform(bindings.key_to_action[event.code]);
+	};
+	function perform(action) {
+		switch(action) {
 		case "left":
 			game.left();
 			draw_game(board_context, game);
@@ -128,7 +136,7 @@ function main() {
 			draw_queue(queue_context, game.queue);
 			break;
 		}
-	};
+	}
 }
 
 function draw_game(context, game) {
