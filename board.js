@@ -48,6 +48,9 @@ class Board {
 		return true;
 	}
 	unset_cell(x, y) {
+		if(y >= 20) {
+			return;
+		}
 		this.cells[y][x] = "empty";
 		this.columns[x] &= ~(1 << y);
 		this.g_piss[x] &= ~(1 << y);
@@ -55,6 +58,9 @@ class Board {
 		this.fill--;
 	}
 	set_cell_g_piss(x, y) {
+		if(y >= 20) {
+			return;
+		}
 		this.cells[y][x] = "g piss";
 		this.columns[x] |= 1 << y;
 		this.g_piss[x] |= 1 << y;
@@ -62,6 +68,9 @@ class Board {
 		this.fill++;
 	}
 	set_cell_other(x, y, piss) {
+		if(y >= 20) {
+			return;
+		}
 		this.cells[y][x] = piss;
 		this.columns[x] |= 1 << y;
 		this.row_fill[y]++;
