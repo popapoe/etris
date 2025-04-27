@@ -35,6 +35,218 @@ class Bindings {
 	}
 }
 
+class State {
+	constructor(game) {
+		this.game = game;
+		this.das = 100;
+		this.arr = 0;
+		this.soft_drop_das = 100;
+		this.soft_drop_arr = 0;
+		this.is_arr_expired = false;
+		this.is_soft_drop_arr_expired = false;
+		this.is_left_pressed = false;
+		this.is_right_pressed = false;
+		this.counter = 0;
+		this.timeline = new PriorityQueue(function(left, right) {
+			let [ left_time, left_counter, ] = left;
+			let [ right_time, right_counter, ] = right;
+			if(left_time !== right_time) {
+				return left_time - right_time;
+			} else {
+				return left_counter - right_counter;
+			}
+		});
+	}
+	insert(time, event) {
+		this.timeline.insert([ time, this.counter, event ]);
+		this.counter++;
+	}
+	press(action) {
+		switch(action) {
+		case "left":
+			this.insert(document.timeline.currentTime, "press left");
+			break;
+		case "right":
+			this.insert(document.timeline.currentTime, "press right");
+			break;
+		case "down":
+			this.insert(document.timeline.currentTime, "press down");
+			break;
+		case "hard drop":
+			this.insert(document.timeline.currentTime, "hard drop");
+			break;
+		case "rotate ccw":
+			this.insert(document.timeline.currentTime, "rotate ccw");
+			break;
+		case "rotate cw":
+			this.insert(document.timeline.currentTime, "rotate cw");
+			break;
+		case "rotate 180":
+			this.insert(document.timeline.currentTime, "rotate 180");
+			break;
+		case "hold":
+			this.insert(document.timeline.currentTime, "hold");
+			break;
+		}
+		this.counter++;
+	}
+	release(action) {
+		switch(action) {
+		case "left":
+			this.insert(document.timeline.currentTime, "release left");
+			break;
+		case "right":
+			this.insert(document.timeline.currentTime, "release right");
+			break;
+		case "down":
+			this.insert(document.timeline.currentTime, "release down");
+			break;
+		}
+	}
+	continue_soft_drop(time) {
+		if(this.is_soft_drop_arr_expired) {
+			this.insert(time, "down repeat");
+			this.is_soft_drop_arr_expired = false;
+		}
+	}
+	continue_horizontal(time) {
+		if(this.is_arr_expired) {
+			if(this.horizontal_direction === "left") {
+				this.insert(time, "left repeat");
+				this.is_arr_expired = false;
+			}
+			if(this.horizontal_direction === "right") {
+				this.insert(time, "right repeat");
+				this.is_arr_expired = false;
+			}
+		}
+	}
+	tick(target) {
+		while(this.timeline.size() !== 0) {
+			let [ time, counter, event ] = this.timeline.peek();
+			if(time >= target) {
+				break;
+			}
+			this.timeline.extract();
+			switch(event) {
+			case "press left":
+				this.is_left_pressed = true;
+				if(this.game.left()) {
+					this.continue_soft_drop(time);
+				}
+				this.horizontal_direction = "left";
+				this.insert(time + this.das, "left repeat");
+				this.is_arr_expired = false;
+				break;
+			case "press right":
+				this.is_right_pressed = true;
+				if(this.game.right()) {
+					this.continue_soft_drop(time);
+				}
+				this.horizontal_direction = "right";
+				this.insert(time + this.das, "right repeat");
+				this.is_arr_expired = false;
+				break;
+			case "press down":
+				this.is_soft_dropping = true;
+				if(this.game.down()) {
+					this.continue_horizontal(time);
+				}
+				this.insert(time + this.soft_drop_das, "down repeat");
+				this.is_soft_drop_arr_expired = true;
+				break;
+			case "release left":
+				this.is_left_pressed = false;
+				if(this.horizontal_direction === "left") {
+					if(this.is_right_pressed) {
+						this.horizontal_direction = "right";
+						this.insert(time + this.das, "right repeat");
+						this.is_arr_expired = false;
+					} else {
+						this.horizontal_direction = "none";
+						this.is_arr_expired = false;
+					}
+				}
+				break;
+			case "release right":
+				this.is_right_pressed = false;
+				if(this.horizontal_direction === "right") {
+					if(this.is_left_pressed) {
+						this.horizontal_direction = "left";
+						this.insert(time + this.das, "left repeat");
+						this.is_arr_expired = false;
+					} else {
+						this.horizontal_direction = "none";
+						this.is_arr_expired = false;
+					}
+				}
+				break;
+			case "release down":
+				this.is_soft_dropping = false;
+				this.is_soft_drop_arr_expired = false;
+				break;
+			case "left repeat":
+				if(this.horizontal_direction === "left") {
+					if(this.game.left()) {
+						this.insert(time + this.arr, "left repeat");
+						this.continue_soft_drop(time);
+					} else {
+						this.is_arr_expired = true;
+					}
+				}
+				break;
+			case "right repeat":
+				if(this.horizontal_direction === "right") {
+					if(this.game.right()) {
+						this.insert(time + this.arr, "right repeat");
+						this.continue_soft_drop(time);
+					} else {
+						this.is_arr_expired = true;
+					}
+				}
+				break;
+			case "down repeat":
+				if(this.is_soft_dropping) {
+					if(this.game.down()) {
+						this.insert(time + this.soft_drop_arr, "down repeat");
+						this.continue_horizontal(time);
+					} else {
+						this.is_soft_drop_arr_expired = true;
+					}
+				}
+				break;
+			case "hard drop":
+				this.game.drop();
+				this.game.lock();
+				this.game.next();
+				this.continue_horizontal(time);
+				this.continue_soft_drop(time);
+				break;
+			case "rotate ccw":
+				this.game.rotate_ccw();
+				this.continue_horizontal(time);
+				this.continue_soft_drop(time);
+				break;
+			case "rotate cw":
+				this.game.rotate_cw();
+				this.continue_horizontal(time);
+				this.continue_soft_drop(time);
+				break;
+			case "rotate 180":
+				this.game.rotate_180();
+				this.continue_horizontal(time);
+				this.continue_soft_drop(time);
+				break;
+			case "hold":
+				this.game.hold();
+				this.continue_horizontal(time);
+				this.continue_soft_drop(time);
+				break;
+			}
+		}
+	}
+}
+
 function main() {
 	let hold_canvas = document.getElementById("hold");
 	let board_canvas = document.getElementById("board");
@@ -54,6 +266,7 @@ function main() {
 	board_context.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 20 * CELL_SIZE);
 	queue_context.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 14 * CELL_SIZE);
 	let game = new Game();
+	let state = new State(game);
 	let reader = game.log.read();
 	hold_context.fillStyle = "black";
 	hold_context.fillRect(0, 0, 4, 2);
@@ -68,8 +281,11 @@ function main() {
 		let button = document.createElement("button");
 		action_td.appendChild(button);
 		button.textContent = action;
-		button.onclick = function(event) {
-			perform(action);
+		button.onmousedown = function(event) {
+			state.press(action);
+		};
+		button.onmouseup = function(event) {
+			state.release(action);
 		};
 		let key_input = document.createElement("input");
 		key_td.appendChild(key_input);
@@ -87,55 +303,34 @@ function main() {
 	}
 	window.onkeydown = function(event) {
 		event.preventDefault();
-		perform(bindings.key_to_action[event.code]);
-	};
-	function perform(action) {
-		switch(action) {
-		case "left":
-			game.left();
-			draw_game(board_context, game);
-			break;
-		case "right":
-			game.right();
-			draw_game(board_context, game);
-			break;
-		case "down":
-			game.down();
-			draw_game(board_context, game);
-			break;
-		case "hard drop":
-			game.drop();
-			game.lock();
-			game.next();
-			draw_game(board_context, game);
-			draw_queue(queue_context, game.queue);
-			for(let message of reader.catch_up()) {
-				let li = document.createElement("li");
-				li.textContent = message;
-				messagees_ul.appendChild(li);
+		if(!event.repeat) {
+			if(event.code in bindings.key_to_action) {
+				state.press(bindings.key_to_action[event.code]);
 			}
-			break;
-		case "rotate ccw":
-			game.rotate_ccw();
-			draw_game(board_context, game);
-			break;
-		case "rotate cw":
-			game.rotate_cw();
-			draw_game(board_context, game);
-			break;
-		case "rotate 180":
-			game.rotate_180();
-			draw_game(board_context, game);
-			break;
-		case "hold":
-			game.hold();
-			hold_context.fillStyle = "black";
-			hold_context.fillRect(0, 0, 4, 2);
-			draw_piss(hold_context, game.held, 1, 0, "0");
-			draw_game(board_context, game);
-			draw_queue(queue_context, game.queue);
-			break;
 		}
+	};
+	window.onkeyup = function(event) {
+		event.preventDefault();
+		if(event.code in bindings.key_to_action) {
+			state.release(bindings.key_to_action[event.code]);
+		}
+	};
+	requestAnimationFrame(frame);
+	function frame(target) {
+		hold_context.fillStyle = "black";
+		hold_context.fillRect(0, 0, 4, 2);
+		if(game.held !== "empty") {
+			draw_piss(hold_context, game.held, 1, 0, "0");
+		}
+		draw_game(board_context, game);
+		draw_queue(queue_context, game.queue);
+		for(let message of reader.catch_up()) {
+			let li = document.createElement("li");
+			li.textContent = message;
+			messagees_ul.appendChild(li);
+		}
+		state.tick(target);
+		requestAnimationFrame(frame);
 	}
 }
 
