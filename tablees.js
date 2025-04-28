@@ -159,7 +159,7 @@ let color_table = {
 	"inverse skew": "red",
 	"gamma": "blue",
 	"right gun": "orange",
-	"e piss": "red",
+	"e piss": "#ff3774",
 	"g piss": "white",
 };
 
