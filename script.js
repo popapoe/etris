@@ -11,6 +11,7 @@ class Bindings {
 			"KeyX": "rotate cw",
 			"ShiftLeft": "rotate 180",
 			"ControlLeft": "hold",
+			"Digit1": "reset",
 		};
 		this.action_to_key = {};
 		for(let key in this.key_to_action) {
@@ -36,8 +37,10 @@ class Bindings {
 }
 
 class State {
-	constructor(game) {
-		this.game = game;
+	constructor() {
+		this.game = new Game();
+		this.reader = this.game.log.read();
+		this.log = new Log();
 		this.das = 100;
 		this.arr = 0;
 		this.soft_drop_das = 100;
@@ -64,6 +67,18 @@ class State {
 		this.counter++;
 		return key;
 	}
+	reset() {
+		this.game = new Game();
+		this.reader = this.game.log.read();
+		this.is_arr_expired = false;
+		this.is_soft_drop_arr_expired = false;
+		this.is_left_pressed = false;
+		this.is_right_pressed = false;
+		this.das_key = null;
+		this.soft_drop_das_key = null;
+		this.counter = 0;
+		this.timeline.clear();
+	}
 	press(action) {
 		switch(action) {
 		case "left":
@@ -89,6 +104,9 @@ class State {
 			break;
 		case "hold":
 			this.insert(document.timeline.currentTime, "hold");
+			break;
+		case "reset":
+			this.reset();
 			break;
 		}
 	}
@@ -255,6 +273,9 @@ class State {
 				break;
 			}
 		}
+		for(let message of this.reader.catch_up()) {
+			this.log.add(message);
+		}
 	}
 }
 
@@ -280,8 +301,8 @@ function main() {
 	hold_context.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 2 * CELL_SIZE);
 	board_context.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 20 * CELL_SIZE);
 	queue_context.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 14 * CELL_SIZE);
-	let state = new State(new Game());
-	let reader = state.game.log.read();
+	let state = new State();
+	let reader = state.log.read();
 	hold_context.fillStyle = "black";
 	hold_context.fillRect(0, 0, 4, 2);
 	draw_queue(queue_context, state.game.queue);
@@ -383,22 +404,22 @@ function main() {
 	};
 	requestAnimationFrame(frame);
 	function frame(target) {
-		state.tick(target);
-		hold_context.fillStyle = "black";
-		hold_context.fillRect(0, 0, 4, 2);
-		if(state.game.held !== "empty") {
-			draw_piss(hold_context, state.game.held, 1, 0, "0");
-		}
-		draw_game(board_context, state.game);
-		draw_queue(queue_context, state.game.queue);
-		for(let message of reader.catch_up()) {
-			let li = document.createElement("li");
-			li.textContent = message;
-			messagees_ul.appendChild(li);
-		}
 		if(!state.game.over) {
-			requestAnimationFrame(frame);
+			state.tick(target);
+			hold_context.fillStyle = "black";
+			hold_context.fillRect(0, 0, 4, 2);
+			if(state.game.held !== "empty") {
+				draw_piss(hold_context, state.game.held, 1, 0, "0");
+			}
+			draw_game(board_context, state.game);
+			draw_queue(queue_context, state.game.queue);
+			for(let message of reader.catch_up()) {
+				let li = document.createElement("li");
+				li.textContent = message;
+				messagees_ul.appendChild(li);
+			}
 		}
+		requestAnimationFrame(frame);
 	}
 }
 

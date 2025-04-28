@@ -45,6 +45,13 @@ class PriorityQueue {
 			this.sift_down(this.sift_up(index));
 		}
 	}
+	clear() {
+		for(let key of this.keys) {
+			key.index = -1;
+		}
+		this.heap.length = 0;
+		this.keys.length = 0;
+	}
 	sift_up(index) {
 		while(true) {
 			let parent = index >> 1;
