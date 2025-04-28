@@ -281,13 +281,12 @@ function main() {
 	hold_context.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 2 * CELL_SIZE);
 	board_context.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 20 * CELL_SIZE);
 	queue_context.setTransform(CELL_SIZE, 0, 0, -CELL_SIZE, 0, 14 * CELL_SIZE);
-	let game = new Game();
-	let state = new State(game);
-	let reader = game.log.read();
+	let state = new State(new Game());
+	let reader = state.game.log.read();
 	hold_context.fillStyle = "black";
 	hold_context.fillRect(0, 0, 4, 2);
-	draw_queue(queue_context, game.queue);
-	draw_game(board_context, game);
+	draw_queue(queue_context, state.game.queue);
+	draw_game(board_context, state.game);
 	let bindings = new Bindings();
 	let key_inputs = {};
 	for(let action in bindings.action_to_key) {
@@ -388,11 +387,11 @@ function main() {
 		state.tick(target);
 		hold_context.fillStyle = "black";
 		hold_context.fillRect(0, 0, 4, 2);
-		if(game.held !== "empty") {
-			draw_piss(hold_context, game.held, 1, 0, "0");
+		if(state.game.held !== "empty") {
+			draw_piss(hold_context, state.game.held, 1, 0, "0");
 		}
-		draw_game(board_context, game);
-		draw_queue(queue_context, game.queue);
+		draw_game(board_context, state.game);
+		draw_queue(queue_context, state.game.queue);
 		for(let message of reader.catch_up()) {
 			let li = document.createElement("li");
 			li.textContent = message;
