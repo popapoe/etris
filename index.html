@@ -4,6 +4,10 @@
 		<title>ETriSs</title>
 		<link rel="icon" href="./favicon.ico">
 		<style>
+			#game {
+				display: inline-block;
+				background: black;
+			}
 			ul {
 				list-style: none;
 				padding-left: 0;
@@ -27,9 +31,11 @@
 	</head>
 	<body>
 		<noscript>Its over</noscript>
-		<canvas id="hold">Its over</canvas>
-		<canvas id="board">Its over</canvas>
-		<canvas id="queue">Its over</canvas>
+		<div id="game">
+			<canvas id="hold">Its over</canvas>
+			<canvas id="board">Its over</canvas>
+			<canvas id="queue">Its over</canvas>
+		</div>
 		<ul id="messagees"></ul>
 		<table id="bindings"></table>
 		<table>
