@@ -46,6 +46,8 @@ class State {
 		this.is_soft_drop_arr_expired = false;
 		this.is_left_pressed = false;
 		this.is_right_pressed = false;
+		this.das_key = null;
+		this.soft_drop_das_key = null;
 		this.counter = 0;
 		this.timeline = new PriorityQueue(function(left, right) {
 			let [ left_time, left_counter, ] = left;
@@ -58,8 +60,9 @@ class State {
 		});
 	}
 	insert(time, event) {
-		this.timeline.insert([ time, this.counter, event ]);
+		let key = this.timeline.insert([ time, this.counter, event ]);
 		this.counter++;
+		return key;
 	}
 	press(action) {
 		switch(action) {
@@ -121,6 +124,16 @@ class State {
 			}
 		}
 	}
+	cancel_das() {
+		if(this.das_key !== null && this.das_key.index !== -1) {
+			this.timeline.delete(this.das_key);
+		}
+	}
+	cancel_soft_drop_das() {
+		if(this.soft_drop_das_key !== null && this.soft_drop_das_key.index !== -1) {
+			this.timeline.delete(this.soft_drop_das_key);
+		}
+	}
 	tick(target) {
 		while(this.timeline.size() !== 0) {
 			let [ time, counter, event ] = this.timeline.peek();
@@ -134,8 +147,9 @@ class State {
 				if(this.game.left()) {
 					this.continue_soft_drop(time);
 				}
+				this.cancel_das();
 				this.horizontal_direction = "left";
-				this.insert(time + this.das, "left repeat");
+				this.das_key = this.insert(time + this.das, "left repeat");
 				this.is_arr_expired = false;
 				break;
 			case "press right":
@@ -143,26 +157,28 @@ class State {
 				if(this.game.right()) {
 					this.continue_soft_drop(time);
 				}
+				this.cancel_das();
 				this.horizontal_direction = "right";
-				this.insert(time + this.das, "right repeat");
+				this.das_key = this.insert(time + this.das, "right repeat");
 				this.is_arr_expired = false;
 				break;
 			case "press down":
-				this.is_soft_dropping = true;
 				if(this.game.down()) {
 					this.continue_horizontal(time);
 				}
-				this.insert(time + this.soft_drop_das, "down repeat");
+				this.soft_drop_das_key = this.insert(time + this.soft_drop_das, "down repeat");
 				this.is_soft_drop_arr_expired = true;
 				break;
 			case "release left":
 				this.is_left_pressed = false;
 				if(this.horizontal_direction === "left") {
 					if(this.is_right_pressed) {
+						this.cancel_das();
 						this.horizontal_direction = "right";
-						this.insert(time + this.das, "right repeat");
+						this.das_key = this.insert(time + this.das, "right repeat");
 						this.is_arr_expired = false;
 					} else {
+						this.cancel_das();
 						this.horizontal_direction = "none";
 						this.is_arr_expired = false;
 					}
@@ -172,47 +188,43 @@ class State {
 				this.is_right_pressed = false;
 				if(this.horizontal_direction === "right") {
 					if(this.is_left_pressed) {
+						this.cancel_das();
 						this.horizontal_direction = "left";
-						this.insert(time + this.das, "left repeat");
+						this.das_key = this.insert(time + this.das, "left repeat");
 						this.is_arr_expired = false;
 					} else {
+						this.cancel_das();
 						this.horizontal_direction = "none";
 						this.is_arr_expired = false;
 					}
 				}
 				break;
 			case "release down":
-				this.is_soft_dropping = false;
+				this.cancel_soft_drop_das();
 				this.is_soft_drop_arr_expired = false;
 				break;
 			case "left repeat":
-				if(this.horizontal_direction === "left") {
-					if(this.game.left()) {
-						this.insert(time + this.arr, "left repeat");
-						this.continue_soft_drop(time);
-					} else {
-						this.is_arr_expired = true;
-					}
+				if(this.game.left()) {
+					this.das_key = this.insert(time + this.arr, "left repeat");
+					this.continue_soft_drop(time);
+				} else {
+					this.is_arr_expired = true;
 				}
 				break;
 			case "right repeat":
-				if(this.horizontal_direction === "right") {
-					if(this.game.right()) {
-						this.insert(time + this.arr, "right repeat");
-						this.continue_soft_drop(time);
-					} else {
-						this.is_arr_expired = true;
-					}
+				if(this.game.right()) {
+					this.das_key = this.insert(time + this.arr, "right repeat");
+					this.continue_soft_drop(time);
+				} else {
+					this.is_arr_expired = true;
 				}
 				break;
 			case "down repeat":
-				if(this.is_soft_dropping) {
-					if(this.game.down()) {
-						this.insert(time + this.soft_drop_arr, "down repeat");
-						this.continue_horizontal(time);
-					} else {
-						this.is_soft_drop_arr_expired = true;
-					}
+				if(this.game.down()) {
+					this.soft_drop_das_key = this.insert(time + this.soft_drop_arr, "down repeat");
+					this.continue_horizontal(time);
+				} else {
+					this.is_soft_drop_arr_expired = true;
 				}
 				break;
 			case "hard drop":
