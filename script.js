@@ -429,10 +429,29 @@ function draw_game(context, game) {
 	draw_piss(context, game.piss, game.piss_x, game.piss_y, game.piss_orientation);
 }
 function draw_board(context, board) {
+	context.fillStyle = get_color("empty");
+	context.fillRect(0, 0, 10, 20);
+	context.beginPath();
+	for(let x = 1; x < 10; x++) {
+		context.moveTo(x, 0);
+		context.lineTo(x, 20);
+	}
+	for(let y = 1; y < 20; y++) {
+		context.moveTo(0, y);
+		context.lineTo(10, y);
+	}
+	let transform = context.getTransform();
+	context.resetTransform();
+	context.strokeStyle = "dimgray";
+	context.lineWidth = 1;
+	context.stroke();
+	context.setTransform(transform);
 	for(let y = 0; y < 20; y++) {
 		for(let x = 0; x < 10; x++) {
-			context.fillStyle = get_color(board.cells[y][x]);
-			context.fillRect(x, y, 1, 1);
+			if(board.cells[y][x] !== "empty") {
+				context.fillStyle = get_color(board.cells[y][x]);
+				context.fillRect(x, y, 1, 1);
+			}
 		}
 	}
 }
