@@ -91,7 +91,6 @@ class State {
 			this.insert(document.timeline.currentTime, "hold");
 			break;
 		}
-		this.counter++;
 	}
 	release(action) {
 		switch(action) {
