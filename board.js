@@ -33,7 +33,7 @@ class Board {
 	}
 	clear_column(x, y) {
 		let bottom = 32 - Math.clz32(this.g_piss[x] & ~(-1 << y));
-		let top = ctz32(~this.columns[x] & -1 << bottom);
+		let top = ctz32(~(this.columns[x] & ~this.g_piss[x]) & -1 << bottom);
 		if(y >= top) {
 			return false;
 		}
