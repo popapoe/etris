@@ -77,7 +77,6 @@ class Game {
 		}
 	}
 	rotate_cw() {
-		this.is_spin = true;
 		let original_x = this.piss_x;
 		let original_y = this.piss_y;
 		let original_orientation = this.piss_orientation;
@@ -86,16 +85,15 @@ class Game {
 			this.piss_x = original_x + kick_x;
 			this.piss_y = original_y + kick_y;
 			if(!this.is_piss_inside()) {
+				this.is_spin = true;
 				return;
 			}
 		}
-		this.is_spin = false;
 		this.piss_x = original_x;
 		this.piss_y = original_y;
 		this.piss_orientation = original_orientation;
 	}
 	rotate_ccw() {
-		this.is_spin = true;
 		let original_x = this.piss_x;
 		let original_y = this.piss_y;
 		let original_orientation = this.piss_orientation;
@@ -104,16 +102,15 @@ class Game {
 			this.piss_x = original_x + kick_x;
 			this.piss_y = original_y + kick_y;
 			if(!this.is_piss_inside()) {
+				this.is_spin = true;
 				return;
 			}
 		}
-		this.is_spin = false;
 		this.piss_x = original_x;
 		this.piss_y = original_y;
 		this.piss_orientation = original_orientation;
 	}
 	rotate_180() {
-		this.is_spin = true;
 		let original_x = this.piss_x;
 		let original_y = this.piss_y;
 		let original_orientation = this.piss_orientation;
@@ -122,10 +119,10 @@ class Game {
 			this.piss_x = original_x + kick_x;
 			this.piss_y = original_y + kick_y;
 			if(!this.is_piss_inside()) {
+				this.is_spin = true;
 				return;
 			}
 		}
-		this.is_spin = false;
 		this.piss_x = original_x;
 		this.piss_y = original_y;
 		this.piss_orientation = original_orientation;
