@@ -72,7 +72,8 @@ class State {
 		return key;
 	}
 	reset() {
-		this.game = new Game();
+		this.history = new History();
+		this.game = new Game(this.history);
 		this.reader = this.game.log.read();
 		this.is_arr_expired = false;
 		this.is_soft_drop_arr_expired = false;
@@ -82,6 +83,7 @@ class State {
 		this.soft_drop_das_key = null;
 		this.counter = 0;
 		this.timeline.clear();
+		this.history.commit_first();
 	}
 	press(action) {
 		switch(action) {
