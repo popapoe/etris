@@ -19,6 +19,11 @@ class History {
 		this.piss_forwards = [];
 		this.piss_backwards = [];
 	}
+	rollback() {
+		for(let index = this.piss_backwards.length - 1; index >= 0; index--) {
+			this.piss_backwards[index]();
+		}
+	}
 	do(forward, backward) {
 		this.piss_forwards.push(forward);
 		this.piss_backwards.push(backward);
@@ -31,6 +36,7 @@ class History {
 		return this.index === this.forwards.length;
 	}
 	undo() {
+		this.rollback();
 		this.index--;
 		let piss_backwards = this.backwards[this.index];
 		for(let index = piss_backwards.length - 1; index >= 0; index--) {
@@ -38,6 +44,7 @@ class History {
 		}
 	}
 	redo() {
+		this.rollback();
 		let piss_forwards = this.forwards[this.index];
 		for(let index = 0; index < piss_forwards.length; index++) {
 			piss_forwards[index]();
