@@ -4,18 +4,31 @@
 		<title>ETriSs</title>
 		<link rel="icon" href="./favicon.ico">
 		<style>
+			body {
+				margin: 0 auto;
+				width: max-content;
+			}
+			#container {
+				display: flex;
+				align-items: start;
+				gap: 10px;
+			}
 			#game {
-				display: inline-block;
+				display: flex;
+				align-items: end;
+				gap: 10px;
+				width: max-content;
 				background: black;
 			}
-			ul {
-				list-style: none;
-				padding-left: 0;
+			#settings {
+				display: flex;
+				flex-direction: column;
+				align-items: start;
+				gap: 10px;
 			}
 			#messagees {
-				width: 500px;
-				height: 100px;
-				overflow: scroll;
+				list-style: none;
+				padding-left: 0;
 			}
 			#messagees > li:nth-child(odd) {
 				background: lightgray;
@@ -32,31 +45,35 @@
 	</head>
 	<body>
 		<noscript>Its over</noscript>
-		<div id="game">
-			<canvas id="hold">Its over</canvas>
-			<canvas id="board">Its over</canvas>
-			<canvas id="queue">Its over</canvas>
+		<div id="container">
+			<div id="game">
+				<canvas id="hold">Its over</canvas>
+				<canvas id="board">Its over</canvas>
+				<canvas id="queue">Its over</canvas>
+			</div>
+			<div id="settings">
+				<table id="bindings"></table>
+				<table>
+					<tr>
+						<td>DAS</td>
+						<td><input type="number" id="das" min="0"></td>
+					</tr>
+					<tr>
+						<td>ARR</td>
+						<td><input type="number" id="arr" min="0"></td>
+					</tr>
+					<tr>
+						<td>soft drop DAS</td>
+						<td><input type="number" id="soft-drop-das" min="0"></td>
+					</tr>
+					<tr>
+						<td>soft drop ARR</td>
+						<td><input type="number" id="soft-drop-arr" min="0"></td>
+					</tr>
+				</table>
+			</div>
 		</div>
 		<ul id="messagees"></ul>
-		<table id="bindings"></table>
-		<table>
-			<tr>
-				<td>DAS</td>
-				<td><input type="number" id="das" min="0"></td>
-			</tr>
-			<tr>
-				<td>ARR</td>
-				<td><input type="number" id="arr" min="0"></td>
-			</tr>
-			<tr>
-				<td>soft drop DAS</td>
-				<td><input type="number" id="soft-drop-das" min="0"></td>
-			</tr>
-			<tr>
-				<td>soft drop ARR</td>
-				<td><input type="number" id="soft-drop-arr" min="0"></td>
-			</tr>
-		</table>
 		<script>main();</script>
 	</body>
 </html>
