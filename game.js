@@ -1,7 +1,8 @@
 class Game {
-	constructor() {
-		this.board = new Board();
-		this.queue = new Queue();
+	constructor(history) {
+		this.history = history;
+		this.board = new Board(history);
+		this.queue = new Queue(history);
 		this.log = new Log();
 		this.held = "empty";
 		this.piss = "empty";
@@ -23,33 +24,74 @@ class Game {
 		return false;
 	}
 	spawn(piss) {
-		this.piss = piss;
-		this.piss_x = 4;
-		this.piss_y = 19;
-		this.piss_orientation = "0";
-		this.is_spin = false;
-		if(this.is_piss_inside(this.piss_x, this.piss_y, this.piss_orientation)) {
-			this.log.add("Over");
-			this.over = true;
-		}
+		let old_piss = this.piss;
+		let old_piss_x = this.piss_x;
+		let old_piss_y = this.piss_y;
+		let old_piss_orientation = this.piss_orientation;
+		let old_is_spin = this.is_spin;
+		let old_over = this.over;
+		this.history.do(
+			() => {
+				this.piss = piss;
+				this.piss_x = 4;
+				this.piss_y = 19;
+				this.piss_orientation = "0";
+				this.is_spin = false;
+				if(this.is_piss_inside(this.piss_x, this.piss_y, this.piss_orientation)) {
+					this.log.add("Over");
+					this.over = true;
+				}
+			},
+			() => {
+				this.piss = old_piss;
+				this.piss_x = old_piss_x;
+				this.piss_y = old_piss_y;
+				this.piss_orientation = old_piss_orientation;
+				this.is_spin = old_is_spin;
+				this.over = old_over;
+			},
+		);
 	}
 	next() {
 		this.spawn(this.queue.take());
 	}
 	hold() {
 		if(this.held === "empty") {
-			this.held = this.piss;
+			this.history.do(
+				() => {
+					this.held = this.piss;
+				},
+				() => {
+					this.held = "empty";
+				},
+			);
 			this.next();
 		} else {
-			let temporary = this.held;
-			this.held = this.piss;
-			this.spawn(temporary);
+			let old_held = this.held;
+			this.history.do(
+				() => {
+					this.held = this.piss;
+				},
+				() => {
+					this.held = old_held;
+				},
+			);
+			this.spawn(old_held);
 		}
 	}
 	left() {
 		if(!this.is_piss_inside(this.piss_x - 1, this.piss_y, this.piss_orientation)) {
-			this.is_spin = false;
-			this.piss_x--;
+			let old_is_spin = this.is_spin;
+			this.history.do(
+				() => {
+					this.piss_x--;
+					this.is_spin = false;
+				},
+				() => {
+					this.piss_x++;
+					this.is_spin = old_is_spin;
+				},
+			);
 			return true;
 		} else {
 			return false;
@@ -57,8 +99,17 @@ class Game {
 	}
 	right() {
 		if(!this.is_piss_inside(this.piss_x + 1, this.piss_y, this.piss_orientation)) {
-			this.is_spin = false;
-			this.piss_x++;
+			let old_is_spin = this.is_spin;
+			this.history.do(
+				() => {
+					this.piss_x++;
+					this.is_spin = false;
+				},
+				() => {
+					this.piss_x--;
+					this.is_spin = old_is_spin;
+				},
+			);
 			return true;
 		} else {
 			return false;
@@ -66,8 +117,17 @@ class Game {
 	}
 	down() {
 		if(!this.is_piss_inside(this.piss_x, this.piss_y - 1, this.piss_orientation)) {
-			this.is_spin = false;
-			this.piss_y--;
+			let old_is_spin = this.is_spin;
+			this.history.do(
+				() => {
+					this.piss_y--;
+					this.is_spin = false;
+				},
+				() => {
+					this.piss_y++;
+					this.is_spin = old_is_spin;
+				},
+			);
 			return true;
 		} else {
 			return false;
@@ -78,10 +138,21 @@ class Game {
 		let new_orientation = rotate_cw(this.piss_orientation);
 		for(let [ kick_x, kick_y ] of get_kicks(this.piss, old_orientation, new_orientation)) {
 			if(!this.is_piss_inside(this.piss_x + kick_x, this.piss_y + kick_y, new_orientation)) {
-				this.is_spin = true;
-				this.piss_x += kick_x;
-				this.piss_y += kick_y;
-				this.piss_orientation = new_orientation;
+				let old_is_spin = this.is_spin;
+				this.history.do(
+					() => {
+						this.is_spin = true;
+						this.piss_x += kick_x;
+						this.piss_y += kick_y;
+						this.piss_orientation = new_orientation;
+					},
+					() => {
+						this.is_spin = old_is_spin;
+						this.piss_x -= kick_x;
+						this.piss_y -= kick_y;
+						this.piss_orientation = old_orientation;
+					},
+				);
 				return;
 			}
 		}
@@ -91,10 +162,21 @@ class Game {
 		let new_orientation = rotate_ccw(this.piss_orientation);
 		for(let [ kick_x, kick_y ] of get_kicks(this.piss, old_orientation, new_orientation)) {
 			if(!this.is_piss_inside(this.piss_x + kick_x, this.piss_y + kick_y, new_orientation)) {
-				this.is_spin = true;
-				this.piss_x += kick_x;
-				this.piss_y += kick_y;
-				this.piss_orientation = new_orientation;
+				let old_is_spin = this.is_spin;
+				this.history.do(
+					() => {
+						this.is_spin = true;
+						this.piss_x += kick_x;
+						this.piss_y += kick_y;
+						this.piss_orientation = new_orientation;
+					},
+					() => {
+						this.is_spin = old_is_spin;
+						this.piss_x -= kick_x;
+						this.piss_y -= kick_y;
+						this.piss_orientation = old_orientation;
+					},
+				);
 				return;
 			}
 		}
@@ -104,10 +186,21 @@ class Game {
 		let new_orientation = rotate_180(this.piss_orientation);
 		for(let [ kick_x, kick_y ] of get_kicks(this.piss, old_orientation, new_orientation)) {
 			if(!this.is_piss_inside(this.piss_x + kick_x, this.piss_y + kick_y, new_orientation)) {
-				this.is_spin = true;
-				this.piss_x += kick_x;
-				this.piss_y += kick_y;
-				this.piss_orientation = new_orientation;
+				let old_is_spin = this.is_spin;
+				this.history.do(
+					() => {
+						this.is_spin = true;
+						this.piss_x += kick_x;
+						this.piss_y += kick_y;
+						this.piss_orientation = new_orientation;
+					},
+					() => {
+						this.is_spin = old_is_spin;
+						this.piss_x -= kick_x;
+						this.piss_y -= kick_y;
+						this.piss_orientation = old_orientation;
+					},
+				);
 				return;
 			}
 		}
@@ -124,11 +217,20 @@ class Game {
 		return ghost_y;
 	}
 	drop() {
-		let original_y = this.piss_y;
-		this.piss_y = this.get_ghost_y();
-		if(this.piss_y !== original_y) {
-			this.is_spin = false;
-		}
+		let old_piss_y = this.piss_y;
+		let old_is_spin = this.is_spin;
+		let new_piss_y = this.get_ghost_y();
+		let new_is_spin = this.is_spin && new_piss_y === old_piss_y;
+		this.history.do(
+			() => {
+				this.piss_y = new_piss_y;
+				this.is_spin = new_is_spin;
+			},
+			() => {
+				this.piss_y = old_piss_y;
+				this.is_spin = old_is_spin;
+			},
+		);
 	}
 	lock() {
 		for(let [ offset_x, offset_y ] of get_offsets(this.piss, this.piss_orientation)) {

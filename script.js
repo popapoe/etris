@@ -11,6 +11,8 @@ class Bindings {
 			"KeyX": "rotate cw",
 			"ShiftLeft": "rotate 180",
 			"ControlLeft": "hold",
+			"BracketLeft": "undo",
+			"BracketRight": "redo",
 			"Digit1": "reset",
 		};
 		this.action_to_key = {};
@@ -38,7 +40,8 @@ class Bindings {
 
 class State {
 	constructor() {
-		this.game = new Game();
+		this.history = new History();
+		this.game = new Game(this.history);
 		this.reader = this.game.log.read();
 		this.log = new Log();
 		this.das = 100;
@@ -61,6 +64,7 @@ class State {
 				return left_counter - right_counter;
 			}
 		});
+		this.history.commit_first();
 	}
 	insert(time, event) {
 		let key = this.timeline.insert([ time, this.counter, event ]);
@@ -104,6 +108,12 @@ class State {
 			break;
 		case "hold":
 			this.insert(document.timeline.currentTime, "hold");
+			break;
+		case "undo":
+			this.insert(document.timeline.currentTime, "undo");
+			break;
+		case "redo":
+			this.insert(document.timeline.currentTime, "redo");
 			break;
 		case "reset":
 			this.reset();
@@ -250,6 +260,7 @@ class State {
 				this.game.next();
 				this.continue_horizontal(time);
 				this.continue_soft_drop(time);
+				this.history.commit();
 				break;
 			case "rotate ccw":
 				this.game.rotate_ccw();
@@ -270,6 +281,16 @@ class State {
 				this.game.hold();
 				this.continue_horizontal(time);
 				this.continue_soft_drop(time);
+				break;
+			case "undo":
+				if(!this.history.is_at_start()) {
+					this.history.undo();
+				}
+				break;
+			case "redo":
+				if(!this.history.is_at_end()) {
+					this.history.redo();
+				}
 				break;
 			}
 		}

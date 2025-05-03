@@ -1,11 +1,19 @@
 class Queue {
-	constructor() {
+	constructor(history) {
+		this.history = history;
 		this.queue = [];
 		this.generator = generate_piss();
 	}
 	take() {
 		let piss = this.peek(0);
-		this.queue.splice(0, 1);
+		this.history.do(
+			() => {
+				this.queue.splice(0, 1);
+			},
+			() => {
+				this.queue.splice(0, 0, piss);
+			},
+		);
 		return piss;
 	}
 	peek(index) {
