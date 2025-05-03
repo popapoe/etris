@@ -40,6 +40,7 @@ class Board {
 		for(let x = 0; x < 10; x++) {
 			row.push("empty");
 		}
+		let old_fill = this.row_fill[y];
 		this.history.do(
 			() => {
 				this.cells.splice(y, 1);
@@ -52,7 +53,7 @@ class Board {
 				this.cells.pop();
 				this.cells.splice(y, 0, old_row);
 				this.row_fill.pop();
-				this.row_fill.splice(y, 0, 10);
+				this.row_fill.splice(y, 0, old_fill);
 				this.fill += 10;
 			},
 		);
