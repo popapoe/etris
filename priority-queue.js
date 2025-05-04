@@ -54,7 +54,10 @@ class PriorityQueue {
 	}
 	sift_up(index) {
 		while(true) {
-			let parent = index >> 1;
+			let parent = (index - 1) >> 1;
+			if(parent < 0) {
+				break;
+			}
 			if(this.compare(this.heap[index], this.heap[parent]) < 0) {
 				let temporary_entry = this.heap[index];
 				this.heap[index] = this.heap[parent];
@@ -73,8 +76,8 @@ class PriorityQueue {
 	}
 	sift_down(index) {
 		while(true) {
-			let left = index << 1;
-			let right = index << 1 | 1;
+			let left = index << 1 | 1;
+			let right = (index + 1) << 1;
 			if(left >= this.heap.length) {
 				break;
 			}
