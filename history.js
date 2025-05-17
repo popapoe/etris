@@ -23,6 +23,8 @@ class History {
 		for(let index = this.piss_backwards.length - 1; index >= 0; index--) {
 			this.piss_backwards[index]();
 		}
+		this.piss_forwards.length = 0;
+		this.piss_backwards.length = 0;
 	}
 	do(forward, backward) {
 		this.piss_forwards.push(forward);
