@@ -331,6 +331,7 @@ function main() {
 	draw_queue(queue_context, state.game.queue);
 	draw_game(board_context, state.game);
 	let bindings = new Bindings();
+	load_settings(state, bindings);
 	let key_inputs = {};
 	for(let action in bindings.action_to_key) {
 		let tr = bindings_table.insertRow();
@@ -356,6 +357,7 @@ function main() {
 			if(old_action !== null) {
 				key_inputs[old_action].value = bindings.action_to_key[old_action];
 			}
+			save_settings(state, bindings);
 		};
 		key_inputs[action] = key_input;
 	}
@@ -373,6 +375,7 @@ function main() {
 		let value = das_input.valueAsNumber;
 		if(!Number.isNaN(value)) {
 			state.das = value;
+			save_settings(state, bindings);
 		}
 	};
 	arr_input.onkeydown = function(event) {
@@ -385,6 +388,7 @@ function main() {
 		let value = arr_input.valueAsNumber;
 		if(!Number.isNaN(value)) {
 			state.arr = value;
+			save_settings(state, bindings);
 		}
 	};
 	soft_drop_das_input.onkeydown = function(event) {
@@ -397,6 +401,7 @@ function main() {
 		let value = soft_drop_das_input.valueAsNumber;
 		if(!Number.isNaN(value)) {
 			state.soft_drop_das = value;
+			save_settings(state, bindings);
 		}
 	};
 	soft_drop_arr_input.onkeydown = function(event) {
@@ -409,6 +414,7 @@ function main() {
 		let value = soft_drop_arr_input.valueAsNumber;
 		if(!Number.isNaN(value)) {
 			state.soft_drop_arr = value;
+			save_settings(state, bindings);
 		}
 	};
 	window.onkeydown = function(event) {
@@ -499,5 +505,52 @@ function draw_ghost(context, piss, center_x, center_y, orientation) {
 		let y = center_y + offset_y;
 		context.fillStyle = "dimgray";
 		context.fillRect(x, y, 1, 1);
+	}
+}
+
+function load_settings(state, bindings) {
+	let settings;
+	try {
+		let json = localStorage.getItem("settings");
+		if(json === null) {
+			return;
+		} else {
+			settings = JSON.parse(json);
+		}
+	} catch(error) {
+		return;
+	}
+	if(typeof settings.bindings === "object") {
+		for(let action in settings.bindings) {
+			bindings.bind(action, settings.bindings[action]);
+		}
+	}
+	if(typeof settings === "object") {
+		if(typeof settings.das === "number") {
+			state.das = settings.das;
+		}
+		if(typeof settings.arr === "number") {
+			state.arr = settings.arr;
+		}
+		if(typeof settings.soft_drop_das === "number") {
+			state.soft_drop_das = settings.soft_drop_das;
+		}
+		if(typeof settings.soft_drop_arr === "number") {
+			state.soft_drop_arr = settings.soft_drop_arr;
+		}
+	}
+}
+function save_settings(state, bindings) {
+	let settings = {
+		bindings: bindings.action_to_key,
+		das: state.das,
+		arr: state.arr,
+		soft_drop_das: state.soft_drop_das,
+		soft_drop_arr: state.soft_drop_arr,
+	};
+	try {
+		localStorage.setItem("settings", JSON.stringify(settings));
+	} catch(error) {
+		return;
 	}
 }
